@@ -1,0 +1,22 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Model weights and generated assets never belong here (models live in ComfyUI/models/hi3d)
+*.safetensors
+*.ckpt
+*.pt
+*.pth
+*.bin
+*.glb
+*.ply
+*.obj
+
+# Editors and OS files
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db

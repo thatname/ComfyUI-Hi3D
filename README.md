@@ -28,6 +28,23 @@ changes); its license files are kept alongside.
   | `output_faces` | Face count of Hi3D's final pyfqmr simplification. -1 = release default (1M at 512/1024, 2M at 1536); 0 = no simplification, the full extracted mesh (tens of millions of faces at 1536) is returned. |
   | `offload_idle_models` | Only the transformer in use stays on the GPU; the other and the image encoders wait in RAM. |
 
+- **Trellis2 Encode Mesh (Shape Latent)** (`3d/Hi3D`) — `MESH` → native Trellis2 `shape_latent`
+  for **Trellis2 Texture Stage** and `shape_subdivides` for **Trellis2 VAE Decode Texture**.
+  ComfyUI ships the Trellis2 shape decoder only, so without this the texture stage can only
+  run on Trellis2's own shape latent, and its colours are generated for that shape rather
+  than the refined one. The node converts the mesh to TRELLIS.2's flexible dual grid
+  (`o_voxel`, installed with ComfyUI-Trellis2) at 1024 or 1536, and runs the official
+  `shape_enc_next_dc_f16c32_fp16` encoder (TRELLIS.2-4B, downloaded by ComfyUI-Trellis2 to
+  `models/microsoft/TRELLIS.2-4B/ckpts/`) rebuilt on ComfyUI's native sparse modules. The
+  subdivisions are read off the voxels, as official TRELLIS.2 texturing does, so no extra
+  shape decode is needed. `reference_latent` (the shape latent the mesh came from) supplies
+  the model frame: Pixal3D is Y-up, Trellis2 Z-up.
+
+  Checked against the ComfyUI-Trellis2 encoder on the same dual grid: identical coords,
+  latent difference 6e-4 relative (fp16). Decoding the latent with the native shape decoder
+  reproduces the mesh to ~0.6 voxel on average, and the subdivisions agree with the decoder's
+  own predictions to >99%. 1536 on a 2M-face mesh: ~23 s, 7.6 GB peak.
+
 ## Requirements
 
 - Model: `models/hi3d/Hi3Dv1.0/` with `model_index.json`, `scheduler/`, `transformer_512/`,
@@ -49,7 +66,11 @@ scale 2.5 and `output_faces` -1 (Hi3D's own 2M simplification):
   (512 shape, then its 1536 upsample stage) and Hi3D refines the 1536 decode.
 - `3d_pixal3d_trellis2_lowres_hi3d_refine_image_to_model.json`: Trellis2's upsample stage
   and its sampler are removed. The 512 shape latent is decoded directly and Hi3D does the
-  whole climb to 1536; the texture stage runs on the 512 shape latent.
+  whole climb to 1536.
+
+In both, **Trellis2 Encode Mesh** re-encodes the Hi3D mesh at 1536 (a 96³ latent grid, as
+after the upsample stage); its latent drives the texture stage and its subdivisions the
+texture decode.
 
 In both, Hi3D's pyfqmr simplifies its extracted mesh (~95M faces on the floating island) to
 2M, which is unwrapped, textured and saved; `DecimateMesh` (2M) then has nothing left to do.

@@ -1,8 +1,8 @@
 {
-  "id": "14cde9aa-abe7-4313-ac72-5ca48fcf4a95",
+  "id": "3517fdfa-3b88-48a7-8bf6-b43f0314a321",
   "revision": 0,
-  "last_node_id": 334,
-  "last_link_id": 1314,
+  "last_node_id": 335,
+  "last_link_id": 1318,
   "nodes": [
     {
       "id": 91,
@@ -276,7 +276,7 @@
           "localized_name": "shape_subdivides",
           "name": "shape_subdivides",
           "type": "SHAPE_SUBDIVIDES",
-          "link": 558
+          "link": 1312
         }
       ],
       "outputs": [
@@ -372,7 +372,7 @@
           "localized_name": "mesh",
           "name": "mesh",
           "type": "MESH",
-          "link": 1313
+          "link": 1317
         }
       ],
       "outputs": [
@@ -724,7 +724,7 @@
           "name": "reference_mesh",
           "shape": 7,
           "type": "MESH",
-          "link": 1314
+          "link": 1318
         },
         {
           "localized_name": "resolution",
@@ -2642,7 +2642,7 @@
           "type": "MESH",
           "links": [
             1060,
-            1311
+            1315
           ]
         }
       ],
@@ -3259,16 +3259,14 @@
           "type": "MESH",
           "links": [
             1307,
-            1309
+            1313
           ]
         },
         {
           "localized_name": "shape_subdivides",
           "name": "shape_subdivides",
           "type": "SHAPE_SUBDIVIDES",
-          "links": [
-            558
-          ]
+          "links": []
         }
       ],
       "properties": {
@@ -3375,7 +3373,7 @@
           "localized_name": "shape_latent",
           "name": "shape_latent",
           "type": "LATENT",
-          "link": 584
+          "link": 1311
         }
       ],
       "outputs": [
@@ -3408,7 +3406,8 @@
         "Node name for S&R": "Trellis2TextureStage",
         "cnr_id": "comfy-core",
         "ver": "0.33.0"
-      }
+      },
+      "title": "Trellis2 Texture Stage (on the re-encoded Hi3D mesh)"
     },
     {
       "id": 282,
@@ -3687,7 +3686,7 @@
           "type": "LATENT",
           "links": [
             551,
-            584
+            1310
           ]
         }
       ],
@@ -4899,8 +4898,9 @@
           "name": "mesh",
           "type": "MESH",
           "links": [
-            1313,
-            1314
+            1309,
+            1317,
+            1318
           ]
         },
         {
@@ -4933,6 +4933,74 @@
     },
     {
       "id": 329,
+      "type": "Trellis2EncodeShapeMesh",
+      "pos": [
+        -180,
+        1840
+      ],
+      "size": [
+        300,
+        130
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "mesh",
+          "type": "MESH",
+          "link": 1309
+        },
+        {
+          "name": "reference_latent",
+          "type": "LATENT",
+          "shape": 7,
+          "link": 1310
+        },
+        {
+          "name": "encoder",
+          "type": "COMBO",
+          "widget": {
+            "name": "encoder"
+          },
+          "link": null
+        },
+        {
+          "name": "resolution",
+          "type": "COMBO",
+          "widget": {
+            "name": "resolution"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "shape_latent",
+          "type": "LATENT",
+          "links": [
+            1311
+          ]
+        },
+        {
+          "name": "shape_subdivides",
+          "type": "SHAPE_SUBDIVIDES",
+          "links": [
+            1312
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "Trellis2EncodeShapeMesh"
+      },
+      "widgets_values": [
+        "microsoft/TRELLIS.2-4B/ckpts/shape_enc_next_dc_f16c32_fp16.safetensors",
+        "1536"
+      ],
+      "title": "Trellis2 Encode Mesh (Hi3D mesh -> shape latent)"
+    },
+    {
+      "id": 330,
       "type": "PreviewImage",
       "pos": [
         -180,
@@ -4960,7 +5028,7 @@
       "title": "Hi3D conditioning image"
     },
     {
-      "id": 330,
+      "id": 331,
       "type": "MeshToFile3D",
       "pos": [
         140,
@@ -4977,7 +5045,7 @@
         {
           "name": "mesh",
           "type": "MESH",
-          "link": 1309
+          "link": 1313
         }
       ],
       "outputs": [
@@ -4985,7 +5053,7 @@
           "name": "model_3d",
           "type": "FILE_3D_GLB",
           "links": [
-            1310
+            1314
           ]
         }
       ],
@@ -4996,7 +5064,7 @@
       "title": "Coarse mesh"
     },
     {
-      "id": 331,
+      "id": 332,
       "type": "Preview3DAdvanced",
       "pos": [
         140,
@@ -5013,7 +5081,7 @@
         {
           "name": "model_3d",
           "type": "FILE_3D_GLB,FILE_3D_GLTF,FILE_3D_FBX,FILE_3D_OBJ,FILE_3D_STL,FILE_3D_USDZ,FILE_3D",
-          "link": 1310
+          "link": 1314
         }
       ],
       "outputs": [],
@@ -5028,7 +5096,7 @@
       "title": "Preview: coarse (muted, ~100M faces; Ctrl+M to enable)"
     },
     {
-      "id": 332,
+      "id": 333,
       "type": "MeshToFile3D",
       "pos": [
         600,
@@ -5045,7 +5113,7 @@
         {
           "name": "mesh",
           "type": "MESH",
-          "link": 1311
+          "link": 1315
         }
       ],
       "outputs": [
@@ -5053,7 +5121,7 @@
           "name": "model_3d",
           "type": "FILE_3D_GLB",
           "links": [
-            1312
+            1316
           ]
         }
       ],
@@ -5064,7 +5132,7 @@
       "title": "Refined mesh (after DecimateMesh)"
     },
     {
-      "id": 333,
+      "id": 334,
       "type": "Preview3DAdvanced",
       "pos": [
         600,
@@ -5081,7 +5149,7 @@
         {
           "name": "model_3d",
           "type": "FILE_3D_GLB,FILE_3D_GLTF,FILE_3D_FBX,FILE_3D_OBJ,FILE_3D_STL,FILE_3D_USDZ,FILE_3D",
-          "link": 1312
+          "link": 1316
         }
       ],
       "outputs": [],
@@ -5096,7 +5164,7 @@
       "title": "Preview: refined (Hi3D, decimated to 2M for viewing)"
     },
     {
-      "id": 334,
+      "id": 335,
       "type": "MarkdownNote",
       "pos": [
         1060,
@@ -5115,7 +5183,7 @@
         "Node name for S&R": "MarkdownNote"
       },
       "widgets_values": [
-        "## Hi3D v1.0 refinement (second stage)\n\nThe Trellis2 / Pixal3D shape decode is the coarse mesh; Hi3D refines it against the input image and the refined mesh replaces it for post-processing and texture baking.\n\n- **Model:** `models/hi3d/Hi3Dv1.0` (model_index.json, transformer_512, transformer_1024, vae). DINOv2-large and CLIP ViT-L/14 load from the Hugging Face cache.\n- **Devices:** transformers on `device`, VAE decode on `decode_device`. With two 24 GB GPUs keep them different.\n- **Resolution:** 512 (1 pass), 1024 (2), 1536 (3). Set to 1536 with **voxel_budget_scale 2.5**, so detailed objects keep the full 128 / 192 grids instead of shrinking them.\n- **streamed_decode** keeps decoder features in system RAM and splits decoding and extraction into tiles shared by both GPUs (same result as the in-memory decoder, under 10 GB per GPU).\n- **full_decoder** runs the decoder residual blocks the release skips above 12M points.\n- **output_faces -1**: Hi3D's own pyfqmr simplification takes the extracted mesh (~95M faces at 1536 x2.5) to 2M, keeping flat regions crisp; DecimateMesh (2M) then has nothing to remove. Higher values (e.g. 10M) give the bakes a denser source, but ComfyUI's GPU DecimateMesh facets flat surfaces badly when it does the 10M -> 2M step; 0 (no simplification) runs it out of memory.\n- **Coarse preview** is muted: the raw Trellis 1536 decode is ~100M faces.\n- **match_input_frame** must stay on: the Trellis texture voxels are sampled by position.\n- **RemeshMesh is bypassed**: a 768 UDF remesh would erase the refined detail.\n\nHi3D outputs geometry only; colours still come from the Trellis texture stage."
+        "## Hi3D v1.0 refinement (second stage)\n\nThe Trellis2 / Pixal3D shape decode is the coarse mesh; Hi3D refines it against the input image and the refined mesh replaces it for post-processing and texture baking.\n\n- **Model:** `models/hi3d/Hi3Dv1.0` (model_index.json, transformer_512, transformer_1024, vae). DINOv2-large and CLIP ViT-L/14 load from the Hugging Face cache.\n- **Devices:** transformers on `device`, VAE decode on `decode_device`. With two 24 GB GPUs keep them different.\n- **Resolution:** 512 (1 pass), 1024 (2), 1536 (3). Set to 1536 with **voxel_budget_scale 2.5**, so detailed objects keep the full 128 / 192 grids instead of shrinking them.\n- **streamed_decode** keeps decoder features in system RAM and splits decoding and extraction into tiles shared by both GPUs (same result as the in-memory decoder, under 10 GB per GPU).\n- **full_decoder** runs the decoder residual blocks the release skips above 12M points.\n- **output_faces -1**: Hi3D's own pyfqmr simplification takes the extracted mesh (~95M faces at 1536 x2.5) to 2M, keeping flat regions crisp; DecimateMesh (2M) then has nothing to remove. Higher values (e.g. 10M) give the bakes a denser source, but ComfyUI's GPU DecimateMesh facets flat surfaces badly when it does the 10M -> 2M step; 0 (no simplification) runs it out of memory.\n- **Coarse preview** is muted: the raw Trellis 1536 decode is ~100M faces.\n- **match_input_frame** must stay on: the Trellis texture voxels are sampled by position.\n- **RemeshMesh is bypassed**: a 768 UDF remesh would erase the refined detail.\n- **Trellis2 Encode Mesh** encodes the Hi3D mesh with the TRELLIS.2 shape VAE encoder at 1536 (a 96^3 latent grid, as after the upsample stage). Its latent feeds the Texture Stage and its subdivisions the texture decode, so the texture is generated for the refined geometry instead of Trellis2's own shape.\n\nHi3D outputs geometry only; colours come from the Trellis texture stage."
       ],
       "title": "Note: Hi3D refinement"
     }
@@ -5176,14 +5244,6 @@
       93,
       0,
       "LATENT"
-    ],
-    [
-      558,
-      92,
-      1,
-      93,
-      2,
-      "SHAPE_SUBDIVIDES"
     ],
     [
       564,
@@ -5248,14 +5308,6 @@
       98,
       1,
       "CONDITIONING"
-    ],
-    [
-      584,
-      23,
-      0,
-      98,
-      2,
-      "LATENT"
     ],
     [
       585,
@@ -5949,44 +6001,76 @@
       1308,
       328,
       1,
-      329,
+      330,
       0,
       "IMAGE"
     ],
     [
       1309,
-      92,
+      328,
       0,
-      330,
+      329,
       0,
       "MESH"
     ],
     [
       1310,
-      330,
+      23,
       0,
-      331,
-      0,
-      "FILE_3D_GLB"
+      329,
+      1,
+      "LATENT"
     ],
     [
       1311,
-      186,
+      329,
       0,
-      332,
+      98,
+      2,
+      "LATENT"
+    ],
+    [
+      1312,
+      329,
+      1,
+      93,
+      2,
+      "SHAPE_SUBDIVIDES"
+    ],
+    [
+      1313,
+      92,
+      0,
+      331,
       0,
       "MESH"
     ],
     [
-      1312,
-      332,
+      1314,
+      331,
       0,
-      333,
+      332,
       0,
       "FILE_3D_GLB"
     ],
     [
-      1313,
+      1315,
+      186,
+      0,
+      333,
+      0,
+      "MESH"
+    ],
+    [
+      1316,
+      333,
+      0,
+      334,
+      0,
+      "FILE_3D_GLB"
+    ],
+    [
+      1317,
       328,
       0,
       202,
@@ -5994,7 +6078,7 @@
       "MESH"
     ],
     [
-      1314,
+      1318,
       328,
       0,
       147,

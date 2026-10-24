@@ -1,5 +1,5 @@
 {
-  "id": "ecf8914c-2b88-4f31-90a2-67f3019d549d",
+  "id": "548a1d11-3ae5-4c0d-96f5-b58307c99dcd",
   "revision": 0,
   "last_node_id": 335,
   "last_link_id": 1321,
@@ -4531,7 +4531,7 @@
       "widgets_values": [
         "Hi3Dv1.0",
         "cuda:0",
-        "cuda:1"
+        "same as device"
       ]
     },
     {
@@ -4965,7 +4965,7 @@
         "Node name for S&R": "MarkdownNote"
       },
       "widgets_values": [
-        "## Hi3D v1.0 refinement (second stage)\n\nThe Trellis2 / Pixal3D shape decode is the coarse mesh; Hi3D refines it against the input image and the refined mesh replaces it for post-processing and texture baking.\n\n- **Model:** `models/hi3d/Hi3Dv1.0` (model_index.json, transformer_512, transformer_1024, vae). DINOv2-large and CLIP ViT-L/14 load from the Hugging Face cache.\n- **Devices:** transformers on `device`, VAE decode on `decode_device`. With two 24 GB GPUs keep them different.\n- **Resolution:** 512 (1 pass), 1024 (2), 1536 (3). Set to 1536 with **voxel_budget_scale 2.5**, so detailed objects keep the full 128 / 192 grids instead of shrinking them.\n- **streamed_decode** keeps decoder features in system RAM and splits decoding and extraction into tiles shared by both GPUs (same result as the in-memory decoder, under 10 GB per GPU).\n- **full_decoder** runs the decoder residual blocks the release skips above 12M points.\n- **output_faces -1**: Hi3D's own pyfqmr simplification takes the extracted mesh (~95M faces at 1536 x2.5) to 2M, keeping flat regions crisp; DecimateMesh (2M) then has nothing to remove. Higher values (e.g. 10M) give the bakes a denser source, but ComfyUI's GPU DecimateMesh facets flat surfaces badly when it does the 10M -> 2M step; 0 (no simplification) runs it out of memory.\n- **Trellis2 upsample stage removed**: the 512 shape latent is decoded directly (a few million faces) and Hi3D does the whole climb to 1536.\n- **match_input_frame** must stay on: the Trellis texture voxels are sampled by position.\n- **RemeshMesh is bypassed**: a 768 UDF remesh would erase the refined detail.\n- **Trellis2 Encode Mesh** encodes the Hi3D mesh with the TRELLIS.2 shape VAE encoder at 1536 (a 96^3 latent grid, as after the upsample stage). Its latent feeds the Texture Stage and its subdivisions the texture decode, so the texture is generated for the refined geometry instead of Trellis2's own shape.\n\nHi3D outputs geometry only; colours come from the Trellis texture stage."
+        "## Hi3D v1.0 refinement (second stage)\n\nThe Trellis2 / Pixal3D shape decode is the coarse mesh; Hi3D refines it against the input image and the refined mesh replaces it for post-processing and texture baking.\n\n- **Model:** `models/hi3d/Hi3Dv1.0` (model_index.json, transformer_512, transformer_1024, vae). DINOv2-large and CLIP ViT-L/14 load from the Hugging Face cache.\n- **Devices:** transformers on `device`; `decode_device` runs the latent-level decode, revoxelization and hole filling. Saved as 'same as device' so the workflow runs on one GPU; streamed decoding still shares its tiles with every GPU (`stream_devices`). A GPU named here that this machine lacks falls back to the first GPU / 'same as device'.\n- **Resolution:** 512 (1 pass), 1024 (2), 1536 (3). Set to 1536 with **voxel_budget_scale 2.5**, so detailed objects keep the full 128 / 192 grids instead of shrinking them.\n- **streamed_decode** keeps decoder features in system RAM and splits decoding and extraction into tiles shared by both GPUs (same result as the in-memory decoder, under 10 GB per GPU).\n- **full_decoder** runs the decoder residual blocks the release skips above 12M points.\n- **output_faces -1**: Hi3D's own pyfqmr simplification takes the extracted mesh (~95M faces at 1536 x2.5) to 2M, keeping flat regions crisp; DecimateMesh (2M) then has nothing to remove. Higher values (e.g. 10M) give the bakes a denser source, but ComfyUI's GPU DecimateMesh facets flat surfaces badly when it does the 10M -> 2M step; 0 (no simplification) runs it out of memory.\n- **Trellis2 upsample stage removed**: the 512 shape latent is decoded directly (a few million faces) and Hi3D does the whole climb to 1536.\n- **match_input_frame** must stay on: the Trellis texture voxels are sampled by position.\n- **RemeshMesh is bypassed**: a 768 UDF remesh would erase the refined detail.\n- **Trellis2 Encode Mesh** encodes the Hi3D mesh with the TRELLIS.2 shape VAE encoder at 1536 (a 96^3 latent grid, as after the upsample stage). Its latent feeds the Texture Stage and its subdivisions the texture decode, so the texture is generated for the refined geometry instead of Trellis2's own shape.\n\nHi3D outputs geometry only; colours come from the Trellis texture stage."
       ],
       "title": "Note: Hi3D refinement"
     }

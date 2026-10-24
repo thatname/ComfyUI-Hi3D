@@ -50,6 +50,15 @@ def _cuda_devices():
     return [f"cuda:{i}" for i in range(torch.cuda.device_count())] or ["cuda:0"]
 
 
+def _available_device(name, fallback, label):
+    """``name`` if this machine has it, else ``fallback``: workflows carry the saver's GPUs."""
+    if name in _cuda_devices():
+        return name
+    logger.warning("Hi3D: %s %r is not available here (%s); using %s instead",
+                   label, name, ", ".join(_cuda_devices()), fallback or SAME_DEVICE)
+    return fallback
+
+
 def _to_pil_rgba(image, mask, invert_mask):
     """ComfyUI IMAGE [H, W, C] (+ optional MASK [H, W]) to the PIL image Hi3D expects.
 
@@ -130,7 +139,18 @@ class Hi3DLoadModel:
     DESCRIPTION = ("Loads Hi3D v1.0 on the CPU. The high-resolution transformer is read on first use; "
                    "DINOv2-large and CLIP ViT-L/14 come from the Hugging Face cache (downloaded if missing).")
 
+    @classmethod
+    def VALIDATE_INPUTS(cls, device, decode_device):
+        # Taking these inputs here skips ComfyUI's check against this machine's GPU list,
+        # so a workflow saved on a two-GPU machine still loads; load() falls back instead.
+        return True
+
     def load(self, model, device, decode_device):
+        device = _available_device(device, _cuda_devices()[0], "device")
+        if decode_device != SAME_DEVICE:
+            decode_device = _available_device(decode_device, SAME_DEVICE, "decode_device")
+            if decode_device == device:
+                decode_device = SAME_DEVICE
         from transformers.utils import logging as hf_logging
 
         from sparc3d import Sparc3DPipeline

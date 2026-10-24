@@ -9,7 +9,9 @@ changes); its license files are kept alongside.
 
 - **Hi3D Load Model** (`3d/Hi3D`) — loads a model directory from `models/hi3d/` on the CPU.
   `device` runs the image encoders and both 1.8B transformers; `decode_device` runs the
-  latent-level decoder stages, mesh extraction and revoxelization.
+  latent-level decoder stages, mesh extraction and revoxelization. A device the machine
+  does not have (a workflow saved on a two-GPU machine, opened on one GPU) falls back to
+  the first GPU / "same as device" with a warning instead of failing validation.
 - **Hi3D Refine Mesh** (`3d/Hi3D`) — `image` + optional foreground `mask` (used as alpha for
   framing) + coarse `MESH` → refined `MESH` and the conditioning image Hi3D actually saw.
   `match_input_frame` fits the result back onto the coarse mesh's bounding box so Trellis
@@ -60,7 +62,9 @@ changes); its license files are kept alongside.
 ## Workflows
 
 Both in `example_workflows/` (copied to `user/default/workflows/`), set to 1536 with budget
-scale 2.5 and `output_faces` -1 (Hi3D's own 2M simplification):
+scale 2.5 and `output_faces` -1 (Hi3D's own 2M simplification). `decode_device` is saved as
+"same as device" so they run on a single GPU; with more GPUs, streamed decoding still shares
+its tiles across all of them (`stream_devices`):
 
 - `3d_pixal3d_trellis2_hi3d_refine_image_to_model.json`: Trellis2 runs its full cascade
   (512 shape, then its 1536 upsample stage) and Hi3D refines the 1536 decode.

@@ -92,6 +92,8 @@ class Sparc3DPipeline:
         """Occupied-voxel budget per rung; raising it trades sampling time for detail."""
         self.decode_feature_ceiling: int | None = DECODE_FEATURE_CEILING
         """Decoded rows above which another pass is refused; ``None`` disables it."""
+        self.output_face_count: int | None = None
+        """Final face count: ``None`` uses :data:`TARGET_FACE_COUNTS`, ``0`` skips simplification."""
         self.offload_idle_models = False
         """Keep only the components a stage is using on the GPU."""
         self._streaming_devices: list[torch.device] | None = None
@@ -469,8 +471,12 @@ class Sparc3DPipeline:
 
         if mesh is None:
             raise RuntimeError("refinement ladder completed without producing a mesh")
+        if self.output_face_count is None:
+            target_face_count = TARGET_FACE_COUNTS[target_index]
+        else:
+            target_face_count = int(self.output_face_count) or None
         mesh = self._postprocess_mesh(
-            mesh, target_face_count=TARGET_FACE_COUNTS[target_index]
+            mesh, target_face_count=target_face_count
         )
         return Sparc3DPipelineOutput(mesh=mesh, resolution=resolution)
 
@@ -654,7 +660,7 @@ class Sparc3DPipeline:
             return torch.cuda.device(device)
         return contextlib.nullcontext()
 
-    def _postprocess_mesh(self, mesh: Any, *, target_face_count: int) -> Any:
+    def _postprocess_mesh(self, mesh: Any, *, target_face_count: int | None) -> Any:
         from sparc3d.sparcubes.postprocess import postprocess_mesh
 
         return postprocess_mesh(

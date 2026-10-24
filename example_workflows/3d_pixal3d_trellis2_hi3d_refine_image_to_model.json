@@ -1,5 +1,5 @@
 {
-  "id": "f74e0b69-24c6-487e-9433-04838ebcdca0",
+  "id": "14cde9aa-abe7-4313-ac72-5ca48fcf4a95",
   "revision": 0,
   "last_node_id": 334,
   "last_link_id": 1314,
@@ -2641,7 +2641,8 @@
           "name": "mesh",
           "type": "MESH",
           "links": [
-            1060
+            1060,
+            1311
           ]
         }
       ],
@@ -2658,7 +2659,7 @@
         "target_face_count": 700000,
         "placement_mode": "midpoint"
       },
-      "title": "DecimateMesh (keeps Hi3D's 2M faces; lower for a lighter asset)"
+      "title": "DecimateMesh (2M; no-op after Hi3D's 2M simplification)"
     },
     {
       "id": 196,
@@ -4761,7 +4762,7 @@
       ],
       "size": [
         340,
-        470
+        500
       ],
       "flags": {},
       "order": 0,
@@ -4877,6 +4878,14 @@
           "link": null
         },
         {
+          "name": "output_faces",
+          "type": "INT",
+          "widget": {
+            "name": "output_faces"
+          },
+          "link": null
+        },
+        {
           "name": "offload_idle_models",
           "type": "BOOLEAN",
           "widget": {
@@ -4890,7 +4899,6 @@
           "name": "mesh",
           "type": "MESH",
           "links": [
-            1311,
             1313,
             1314
           ]
@@ -4919,6 +4927,7 @@
         "all GPUs",
         true,
         0,
+        -1,
         true
       ]
     },
@@ -5052,7 +5061,7 @@
         "Node name for S&R": "MeshToFile3D"
       },
       "widgets_values": [],
-      "title": "Refined mesh"
+      "title": "Refined mesh (after DecimateMesh)"
     },
     {
       "id": 333,
@@ -5084,7 +5093,7 @@
         1024,
         1024
       ],
-      "title": "Preview: refined (Hi3D)"
+      "title": "Preview: refined (Hi3D, decimated to 2M for viewing)"
     },
     {
       "id": 334,
@@ -5095,7 +5104,7 @@
       ],
       "size": [
         420,
-        420
+        480
       ],
       "flags": {},
       "order": 0,
@@ -5106,7 +5115,7 @@
         "Node name for S&R": "MarkdownNote"
       },
       "widgets_values": [
-        "## Hi3D v1.0 refinement (second stage)\n\nThe Trellis2 / Pixal3D shape decode is the coarse mesh; Hi3D refines it against the input image and the refined mesh replaces it for post-processing and texture baking.\n\n- **Model:** `models/hi3d/Hi3Dv1.0` (model_index.json, transformer_512, transformer_1024, vae). DINOv2-large and CLIP ViT-L/14 load from the Hugging Face cache.\n- **Devices:** transformers on `device`, VAE decode on `decode_device`. With two 24 GB GPUs keep them different.\n- **Resolution:** 512 (1 pass), 1024 (2), 1536 (3). Set to 1536 with **voxel_budget_scale 2.5**, so detailed objects keep the full 128 / 192 grids instead of shrinking them.\n- **streamed_decode** keeps decoder features in system RAM and splits decoding and extraction into tiles shared by both GPUs (same result as the in-memory decoder, under 10 GB per GPU). 1536 x2.5 needs about 60 GB of free RAM on a detailed object; lower the budget if RAM is short.\n- **full_decoder** runs the decoder residual blocks the release skips above 12M points.\n- **Coarse preview** is muted: the raw Trellis 1536 decode is ~100M faces.\n- **match_input_frame** must stay on: the Trellis texture voxels are sampled by position.\n- **RemeshMesh is bypassed**: a 768 UDF remesh would erase the refined detail. Re-enable it (Ctrl+B) if UV unwrapping needs a cleaner mesh.\n\nHi3D outputs geometry only; colours still come from the Trellis texture stage."
+        "## Hi3D v1.0 refinement (second stage)\n\nThe Trellis2 / Pixal3D shape decode is the coarse mesh; Hi3D refines it against the input image and the refined mesh replaces it for post-processing and texture baking.\n\n- **Model:** `models/hi3d/Hi3Dv1.0` (model_index.json, transformer_512, transformer_1024, vae). DINOv2-large and CLIP ViT-L/14 load from the Hugging Face cache.\n- **Devices:** transformers on `device`, VAE decode on `decode_device`. With two 24 GB GPUs keep them different.\n- **Resolution:** 512 (1 pass), 1024 (2), 1536 (3). Set to 1536 with **voxel_budget_scale 2.5**, so detailed objects keep the full 128 / 192 grids instead of shrinking them.\n- **streamed_decode** keeps decoder features in system RAM and splits decoding and extraction into tiles shared by both GPUs (same result as the in-memory decoder, under 10 GB per GPU).\n- **full_decoder** runs the decoder residual blocks the release skips above 12M points.\n- **output_faces -1**: Hi3D's own pyfqmr simplification takes the extracted mesh (~95M faces at 1536 x2.5) to 2M, keeping flat regions crisp; DecimateMesh (2M) then has nothing to remove. Higher values (e.g. 10M) give the bakes a denser source, but ComfyUI's GPU DecimateMesh facets flat surfaces badly when it does the 10M -> 2M step; 0 (no simplification) runs it out of memory.\n- **Coarse preview** is muted: the raw Trellis 1536 decode is ~100M faces.\n- **match_input_frame** must stay on: the Trellis texture voxels are sampled by position.\n- **RemeshMesh is bypassed**: a 768 UDF remesh would erase the refined detail.\n\nHi3D outputs geometry only; colours still come from the Trellis texture stage."
       ],
       "title": "Note: Hi3D refinement"
     }
@@ -5962,7 +5971,7 @@
     ],
     [
       1311,
-      328,
+      186,
       0,
       332,
       0,
@@ -6142,7 +6151,7 @@
         -960,
         1430,
         2470,
-        620
+        660
       ],
       "color": "#b58b2a",
       "flags": {}

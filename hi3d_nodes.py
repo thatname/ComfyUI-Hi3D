@@ -191,6 +191,11 @@ class Hi3DRefineMesh:
                 "decode_point_limit_m": ("INT", {"default": 0, "min": 0, "max": 1000,
                                                  "tooltip": "Refuse another pass when a decode exceeds this many million points "
                                                             "(0 = no limit with streamed decode, the release's 12M without)."}),
+                "output_faces": ("INT", {"default": -1, "min": -1, "max": 500_000_000, "step": 100_000,
+                                         "tooltip": "Faces of the final mesh after Hi3D's pyfqmr simplification. "
+                                                    "-1 = release default (1M at 512/1024, 2M at 1536); "
+                                                    "0 = no simplification, keep every extracted face "
+                                                    "(tens of millions at 1536; slow to preview, unwrap and save)."}),
                 "offload_idle_models": ("BOOLEAN", {"default": True,
                                                     "tooltip": "Keep only the transformer in use on the GPU; the other one and the "
                                                                "image encoders wait in system RAM. Frees about 5 GB for large budgets."}),
@@ -206,7 +211,8 @@ class Hi3DRefineMesh:
     def refine(self, hi3d_pipeline, image, mesh, resolution, steps, seed,
                match_input_frame, offload_after, mask=None, invert_mask=False,
                voxel_budget_scale=1.0, streamed_decode=True, stream_devices="all GPUs",
-               full_decoder=True, decode_point_limit_m=0, offload_idle_models=True):
+               full_decoder=True, decode_point_limit_m=0, offload_idle_models=True,
+               output_faces=-1):
         import trimesh
 
         from sparc3d.pipelines import sparc3d_pipeline as sp
@@ -215,6 +221,7 @@ class Hi3DRefineMesh:
         pipe = hi3d_pipeline.pipeline
         pipe.pass_budgets = tuple(int(round(b * voxel_budget_scale)) for b in sp.PASS_BUDGETS)
         pipe.offload_idle_models = bool(offload_idle_models)
+        pipe.output_face_count = None if output_faces < 0 else int(output_faces)
         if streamed_decode:
             others = _cuda_devices() if stream_devices == "all GPUs" else []
             pipe.enable_streamed_decoding(others)

@@ -25,6 +25,7 @@ changes); its license files are kept alongside.
   | `stream_devices` | `all GPUs` shares decode/extraction tiles across every GPU. |
   | `full_decoder` | Runs the decoder residual blocks the release skips above 12M points (it skips them only to fit GPU memory). Off reproduces the release exactly. |
   | `decode_point_limit_m` | Refuse another pass above this many million decoded points; 0 = no limit when streamed (release: 12M). |
+  | `output_faces` | Face count of Hi3D's final pyfqmr simplification. -1 = release default (1M at 512/1024, 2M at 1536); 0 = no simplification, the full extracted mesh (tens of millions of faces at 1536) is returned. |
   | `offload_idle_models` | Only the transformer in use stays on the GPU; the other and the image encoders wait in RAM. |
 
 ## Requirements
@@ -39,14 +40,24 @@ changes); its license files are kept alongside.
 - RAM: 1536 at `voxel_budget_scale` 2.5 on a detailed object peaks around 55 GB in the
   final simplification (an 86M-face mesh); lower the budget scale if RAM is short.
 
-## Workflow
+## Workflows
 
-`user/default/workflows/3d_pixal3d_trellis2_hi3d_refine_image_to_model.json` — the
-Trellis2 / Pixal3D image-to-model workflow with Hi3D inserted between the shape decode and
-mesh post-processing, set to 1536 with budget scale 2.5. `RemeshMesh` is bypassed (a 768
-remesh would erase the refinement) and `DecimateMesh` is set to 2M faces: without the remesh
-its GPU QEM overshoots on Hi3D's already-simplified mesh (2M -> 342K for a 700K target), so
-the saved asset keeps Hi3D's own 2M faces (~210 MB GLB). Lower it for a lighter asset.
+Both in `example_workflows/` (copied to `user/default/workflows/`), set to 1536 with budget
+scale 2.5 and `output_faces` -1 (Hi3D's own 2M simplification):
+
+- `3d_pixal3d_trellis2_hi3d_refine_image_to_model.json`: Trellis2 runs its full cascade
+  (512 shape, then its 1536 upsample stage) and Hi3D refines the 1536 decode.
+- `3d_pixal3d_trellis2_lowres_hi3d_refine_image_to_model.json`: Trellis2's upsample stage
+  and its sampler are removed. The 512 shape latent is decoded directly and Hi3D does the
+  whole climb to 1536; the texture stage runs on the 512 shape latent.
+
+In both, Hi3D's pyfqmr simplifies its extracted mesh (~95M faces on the floating island) to
+2M, which is unwrapped, textured and saved; `DecimateMesh` (2M) then has nothing left to do.
+Raising `output_faces` (e.g. 10M) gives the normal / AO bakes a denser source, but the 10M -> 2M
+reduction then falls to ComfyUI's GPU `DecimateMesh`, which undershoots its target (~1.5M) and
+collapses flat surfaces into large facets. `output_faces` 0 (no simplification) runs
+`DecimateMesh` out of GPU memory on a 24 GB card with ~100M faces. `RemeshMesh` is bypassed
+(a 768 remesh would erase the refinement).
 
 Measured on the floating-island example, RTX 4090 (transformers) + RTX 3090, 128 GB RAM:
 

@@ -69,7 +69,7 @@ def validate_mesh(mesh: trimesh.Trimesh | trimesh.Scene) -> trimesh.Trimesh:
 def postprocess_mesh(
     mesh: trimesh.Trimesh | trimesh.Scene,
     *,
-    target_face_count: int,
+    target_face_count: int | None,
     component_face_ratio: float = COMPONENT_FACE_RATIO,
     device: torch.device | str | None = None,
 ) -> trimesh.Trimesh:
@@ -77,7 +77,8 @@ def postprocess_mesh(
 
     Args:
         mesh: Triangle mesh or transformed scene to process.
-        target_face_count: Caller-selected pyfqmr face target.
+        target_face_count: Caller-selected pyfqmr face target, or ``None`` to keep
+            every extracted face.
         component_face_ratio: Minimum total-face ratio retained for components
             other than the largest.
         device: Optional device for sorting edges while finding components.
@@ -88,7 +89,7 @@ def postprocess_mesh(
     Raises:
         ValueError: A parameter or intermediate mesh is invalid.
     """
-    if (
+    if target_face_count is not None and (
         isinstance(target_face_count, bool)
         or not isinstance(target_face_count, Integral)
         or int(target_face_count) <= 0
@@ -103,7 +104,8 @@ def postprocess_mesh(
 
     result = validate_mesh(mesh)
     result = _filter_components(result, float(component_face_ratio), device)
-    result = _simplify(result, int(target_face_count))
+    if target_face_count is not None:
+        result = _simplify(result, int(target_face_count))
     result = validate_mesh(result)
 
     vertices = np.asarray(result.vertices, dtype=np.float64)

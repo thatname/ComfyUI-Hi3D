@@ -252,9 +252,10 @@ class Trellis2EncodeShapeMesh:
                 "mesh": ("MESH", {"tooltip": "Mesh in the frame of the Trellis2 shape decode it replaces "
                                              "(e.g. Hi3D Refine Mesh with match_input_frame on)."}),
                 "encoder": (encoder_files(), {"tooltip": "TRELLIS.2 shape VAE encoder, shape_enc_next_dc_f16c32_fp16."}),
-                "resolution": (["1024", "1536"], {"default": "1536",
-                                                  "tooltip": "Dual-grid resolution; the latent grid is 1/16 of it "
-                                                             "(64 or 96), as after Trellis2UpsampleStage."}),
+                "resolution": (["512", "1024", "1536"], {"default": "1536",
+                                                  "tooltip": "Dual-grid resolution; the latent grid is 1/16 of it: "
+                                                             "32 as from Trellis2ShapeStage, 64 or 96 as after "
+                                                             "Trellis2UpsampleStage."}),
             },
             "optional": {
                 "reference_latent": ("LATENT", {"tooltip": "The shape latent the mesh came from. Supplies the model "
@@ -309,10 +310,14 @@ class Trellis2EncodeShapeMesh:
                 [torch.cat([cells[:, :1], cells], dim=1) for cells, _ in stage],
             ))
 
+        # coords and coord_counts live on the compute device, as Trellis2ShapeStage and
+        # Trellis2UpsampleStage leave them: Trellis2TextureStage back-projects Pixal3D's image
+        # features on the coords' device, and CPU half-precision grid_sample there garbles
+        # them (the texture comes out as horizontal bands).
         latent = {
             "samples": samples,
-            "coords": coords,
-            "coord_counts": torch.tensor(counts, dtype=torch.int64),
+            "coords": coords.to(device),
+            "coord_counts": torch.tensor(counts, dtype=torch.int64, device=device),
             "coord_resolution": resolution // 16,
             "type": "trellis2",
             "model_frame": model_frame,
